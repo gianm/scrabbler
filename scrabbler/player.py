@@ -14,6 +14,13 @@ class Player:
         self.rack = []
         self.lexicon = lexicon
 
+    def can_trade(self):
+        # We can trade if there are more than self.board.rack_size tiles left in the bag
+        if len(self.board.alltiles) - sum([1 for row in self.board.squares for square in row if square.letter]) - 3 * self.board.rack_size >= 0:
+            return True
+        else:
+            return False
+
     def move(self, tiles, opponent_move):
         if opponent_move:
             self.board.play(opponent_move)
@@ -44,6 +51,9 @@ class MaxScorePlayer(Player):
     def best_move(self, moves):
         if moves:
             return max(moves, key = lambda x: x.score)
+        elif self.can_trade():
+            # toss these useless tiles
+            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word=''.join(self.rack))
         else:
             # skip our turn
             return Move(row=None, col=None, kind=Move.MOVE_TRADE, word='')
@@ -52,6 +62,9 @@ class MinScorePlayer(Player):
     def best_move(self, moves):
         if moves:
             return min(moves, key = lambda x: x.score)
+        elif self.can_trade():
+            # toss these useless tiles
+            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word=''.join(self.rack))
         else:
             # skip our turn
             return Move(row=None, col=None, kind=Move.MOVE_TRADE, word='')
@@ -60,6 +73,9 @@ class MaxLengthPlayer(Player):
     def best_move(self, moves):
         if moves:
             return max(moves, key = lambda x: len(x.word))
+        elif self.can_trade():
+            # toss these useless tiles
+            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word=''.join(self.rack))
         else:
             # skip our turn
             return Move(row=None, col=None, kind=Move.MOVE_TRADE, word='')
@@ -68,12 +84,8 @@ class TrainingPlayer(Player):
     def best_move(self, moves):
         # randomly either trade letters or play a bad move
         if not moves or random.choice([0, 1]) == 1:
-            # need to track number of tiles in the bag
-            # so we don't make illegal trades
-            bag_tiles = len(self.board.alltiles) - sum([1 for row in self.board.squares for square in row if square.letter]) - 2 * self.board.rack_size
-
-            if bag_tiles >= self.board.rack_size:
-                exchange = ''.join([letter for letter in random.sample(self.rack, random.randrange(1, len(self.rack)))])
+            if self.can_trade():
+                exchange = ''.join([letter for letter in random.sample(self.rack, random.randint(1, len(self.rack)))])
             else:
                 exchange = ''
 
