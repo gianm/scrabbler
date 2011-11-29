@@ -23,7 +23,7 @@ class MyPlayer(player.Player):
 
 # First load a lexicon. Let's use /usr/share/dict/words on this system
 l = lexicon.TrieNode()
-with open('/usr/share/dict/words') as words:
+with open('/Users/gian/Downloads/words2.txt') as words:
     for word in words:
         l.add(word.rstrip().upper())
 

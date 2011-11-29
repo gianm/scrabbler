@@ -246,11 +246,9 @@ class Board:
                                         rack.append('?')
 
                 # Find all candidate left parts and try to extend them
-                if anchor == 0:
-                    # We're at the edge of the board so the left part must be empty
-                    extend_right('', lexicon, anchor)
-                elif self.squares[row][anchor - 1].letter:
-                    # There are tiles already on the board, they must constitute the left part
+                if anchor == 0 or self.squares[row][anchor - 1].letter:
+                    # We're at the left edge of the board *or* there are tiles already
+                    # on the board. Either way the left part is fixed
                     word = ''.join([self.squares[row][i].letter for i in range(prevanchor + 1, anchor)])
                     extend_right(word, lexicon.subtree(word.upper()), anchor)
                 else:
