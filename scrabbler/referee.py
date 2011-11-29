@@ -1,7 +1,5 @@
-import json
 import logging
 import random
-import sys
 import time
 
 import lexicon
@@ -54,6 +52,11 @@ class Referee:
                 if otherplayer["lastmove"] and otherplayer["lastmove"].kind == Move.MOVE_TRADE:
                     otherplayer["lastmove"].mask_word()
 
+                logging.debug("> {0:25s} {1:s}:{2:s}".format(
+                    player["name"],
+                    ''.join(player["lastdrawn"]),
+                    str(otherplayer["lastmove"])))
+
                 # Receive move from player, and time how long it takes
                 t_start = time.time()
                 move = player["obj"].move(player["lastdrawn"], otherplayer["lastmove"])
@@ -83,7 +86,7 @@ class Referee:
                     "score": move.score,
                     "time": int(t_elapsed * 10**6) })
 
-                logging.info("{0:25s} {1:25s} {2:10s} {3:4d} {4:8d}".format(
+                logging.info("< {0:25s} {1:25s} {2:10s} {3:4d} {4:8d}".format(
                     player["name"],
                     str(move) + " " + str(move.score),
                     ''.join(player["rack"]),
@@ -138,7 +141,7 @@ class Referee:
             player, otherplayer = otherplayer, player
 
         # Show the board
-        logging.info(str(self.board))
+        logging.info("Final board:\n" + str(self.board))
 
         # Return representation of this game
         return {
@@ -146,26 +149,3 @@ class Referee:
             "players": [
                 {"name": self.players[0]["name"], "rack": ''.join(self.players[0]["rack"]), "score": self.players[0]["score"]},
                 {"name": self.players[1]["name"], "rack": ''.join(self.players[1]["rack"]), "score": self.players[1]["score"]}, ]}
-
-def main():
-    logging.basicConfig(level=logging.INFO)
-
-    t = lexicon.TrieNode()
-    with open('/usr/share/dict/words') as f:
-        for word in f:
-            t.add(word.rstrip().upper())
-
-    if len(sys.argv) >= 2:
-        p1 = ExternalPlayer(['/bin/sh', '-c', sys.argv[1]])
-    else:
-        p1 = TrainingPlayer(t)
-
-    if len(sys.argv) >= 3:
-        p2 = ExternalPlayer(['/bin/sh', '-c', sys.argv[2]])
-    else:
-        p2 = TrainingPlayer(t)
-
-    ref = Referee(player1=p1, player2=p2, lexicon=t)
-
-    game = ref.run()
-    print json.dumps(game)

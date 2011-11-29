@@ -1,8 +1,5 @@
-import logging
-import random
-import re
 import subprocess
-import sys
+import random
 
 import lexicon
 from board import Board
@@ -94,7 +91,8 @@ class TrainingPlayer(Player):
             return min(moves, key = lambda x: x.score)
 
 class ExternalPlayer:
-    """Provides the same interface as Player, but backed by an external program."""
+    """Provides the same interface as Player, but backed by an external
+    program. See bin/scrabbler-player for an example implementation."""
     def __init__(self, cmd):
         self.popen = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
 
@@ -112,6 +110,7 @@ class ExternalPlayer:
         if not line:
             raise ExternalPlayerError("no move")
 
+        # Might raise InvalidMoveError
         move = Move.from_str(line.rstrip())
         return move
 
@@ -123,41 +122,3 @@ class ExternalPlayer:
 class ExternalPlayerError(Exception):
     """Issued when communication breaks down with an external player."""
     pass
-
-# Follow the stdin/stdout protocol
-def main():
-    t = lexicon.TrieNode()
-    with open('/usr/share/dict/words') as f:
-        for word in f:
-            t.add(word.rstrip().upper())
-
-    if sys.argv >= 2:
-        player = globals()[sys.argv[1]](t)
-    else:
-        player = MaxScorePlayer(t)
-
-    # We're ready
-    sys.stdout.write("HELLO\n")
-    sys.stdout.flush()
-
-    while 1:
-        line = sys.stdin.readline()
-
-        if not line:
-            break
-
-        match = re.match('^([A-Z\?\*]*):(.*)', line)
-        if match:
-            if match.group(2):
-                opponent_move = Move.from_str(match.group(2))
-            else:
-                opponent_move = None
-            move = player.move( list(match.group(1)), opponent_move )
-
-            if move:
-                sys.stdout.write(str(move) + "\n")
-                sys.stdout.flush()
-            else:
-                break
-        else:
-            raise ValueError("invalid line: " + line)

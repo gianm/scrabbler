@@ -1,4 +1,37 @@
 #!/usr/bin/env python
 
-from scrabbler.referee import main
-main()
+import logging
+import json
+import sys
+
+import scrabbler.lexicon
+import scrabbler.player
+import scrabbler.referee
+
+logging.basicConfig(level=logging.INFO)
+
+logging.info("Loading lexicon")
+
+t = scrabbler.lexicon.TrieNode()
+with open('/usr/share/dict/words') as f:
+    for word in f:
+        t.add(word.rstrip().upper())
+
+if len(sys.argv) >= 2:
+    logging.info("player1 = ExternalPlayer (" + sys.argv[1] + ")")
+    p1 = scrabbler.player.ExternalPlayer(['/bin/sh', '-c', sys.argv[1]])
+else:
+    logging.info("player1 = TrainingPlayer")
+    p1 = scrabbler.player.TrainingPlayer(t)
+
+if len(sys.argv) >= 3:
+    logging.info("player2 = ExternalPlayer (" + sys.argv[2] + ")")
+    p2 = scrabbler.player.ExternalPlayer(['/bin/sh', '-c', sys.argv[2]])
+else:
+    logging.info("player2 = TrainingPlayer")
+    p2 = scrabbler.player.TrainingPlayer(t)
+
+ref = scrabbler.referee.Referee(player1=p1, player2=p2, lexicon=t)
+
+game = ref.run()
+print json.dumps(game)
