@@ -24,7 +24,7 @@ class MyPlayer(player.Player):
 
 # First load a lexicon. Let's use /usr/share/dict/words on this system
 l = Lexicon()
-with open('/Users/gian/Downloads/words2.txt') as words:
+with open('/usr/share/dict/words.txt') as words:
     for word in words:
         l.add(word.rstrip().upper())
 
