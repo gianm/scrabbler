@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 logging.info("Loading lexicon")
 
-t = scrabbler.lexicon.TrieNode()
+t = scrabbler.lexicon.Lexicon()
 with open('/usr/share/dict/words') as f:
     for word in f:
         t.add(word.rstrip().upper())

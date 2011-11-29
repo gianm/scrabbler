@@ -9,7 +9,7 @@ import unittest
 
 class TestGame(unittest.TestCase):
     def setUp(self):
-        self.t = scrabbler.lexicon.TrieNode()
+        self.t = scrabbler.lexicon.Lexicon()
         for word in ['aa', 'ab', 'aba', 'abba', 'abbe', 'abed', 'ace', 'aced', 'ad', 'add', 'ae', 'aff', 'ba', 'baa', 'baba', 'babe', 'bad', 'baff', 'be', 'bead', 'bed', 'bee', 'beef', 'cab', 'caca', 'cad', 'cade', 'cafe', 'caff', 'ceca', 'cede', 'cee', 'dab', 'dace', 'dad', 'de', 'deaf', 'deb', 'dee', 'deed', 'def', 'ebb', 'ed', 'ef', 'eff', 'fab', 'fad', 'fe', 'fee', 'feed']:
             self.t.add(word.upper())
 

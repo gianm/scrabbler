@@ -3,7 +3,8 @@
 from scrabbler.board import Board
 from scrabbler.move import Move
 from scrabbler.referee import Referee
-from scrabbler import lexicon, player
+from scrabbler.lexicon import Lexicon
+from scrabbler import player
 
 # You can define your own AI by subclassing Player
 class MyPlayer(player.Player):
@@ -22,7 +23,7 @@ class MyPlayer(player.Player):
 # Let's play a game!
 
 # First load a lexicon. Let's use /usr/share/dict/words on this system
-l = lexicon.TrieNode()
+l = Lexicon()
 with open('/Users/gian/Downloads/words2.txt') as words:
     for word in words:
         l.add(word.rstrip().upper())

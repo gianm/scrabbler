@@ -1,10 +1,10 @@
-class TrieNode:
-    """Node in a trie -- a tree in which each edge is a character and each node represents
-    a prefix composed of all edges from the root to that node. Nodes that represent words
-    in a lexicon are specially marked.
+class Lexicon:
+    """Lexicon represented as a trie -- a tree in which each edge is a character and each
+    node represents a prefix composed of all edges from the root to that node. Nodes that
+    represent words in the lexicon are specially marked as "final".
 
-    >>> import lexicon
-    >>> t = lexicon.TrieNode()
+    >>> from lexicon import Lexicon
+    >>> t = Lexicon()
     >>> t.all()
     []
     >>> t.add('foo')
@@ -29,34 +29,37 @@ class TrieNode:
     >>> t.subtree('ba').all()
     ['r', 'z']
     >>> t.subtree('x')
+    >>> t.final
+    False
+    >>> t.subtree('bar').final
+    True
     """
 
-    def __init__(self, final=False):
-        self.final = final
-        self.out = {}
+    def __init__(self, root=None):
+        self.root = {} if root is None else root
 
     def add(self, word):
         """Add a word to this trie."""
 
-        # Start here and then walk out the edges for this word
-        node = self
-
+        node = self.root
         for char in word:
-            if char not in node.out:
-                node.out[char] = TrieNode()
-            node = node.out[char]
+            if char not in node:
+                node[char] = {}
+            node = node[char]
 
         # We're at the final node -- mark it as such
-        node.final = True
+        node["_final"] = True
 
     def exists(self, word):
         """Check if a word exists in this trie."""
 
-        word_subtree = self.subtree(word)
-        if word_subtree and word_subtree.final:
-            return True
-        else:
-            return False
+        node = self.root
+        for char in word:
+            if char not in node:
+                return False
+            node = node[char]
+
+        return '_final' in node
 
     def all(self):
         """Sorted list of all words in this trie."""
@@ -66,27 +69,32 @@ class TrieNode:
         # Search edges in alphabetical order
         # So we return a sorted list of words
         def search(node, word=''):
-            if node.final:
+            if '_final' in node:
                 wordlist.append(word)
-            for char in sorted(node.out.keys()):
-                search(node.out[char], word + char)
+            for char in sorted(node.keys()):
+                if char is not '_final':
+                    search(node[char], word + char)
 
-        search(self)
+        search(self.root)
         return wordlist
 
     def subtree(self, prefix):
         """Return subtree rooted at prefix, or, None if no such subtree exists."""
 
         # Start here and then walk out the edges for 'prefix'
-        node = self
+        node = self.root
 
         for char in prefix:
-            if char not in node.out:
+            if char not in node:
                 return None
-            node = node.out[char]
+            node = node[char]
 
-        return node
+        return Lexicon(root=node)
 
     def next(self):
         """Returns a list of edges leading out of this node."""
-        return self.out.keys()
+        return filter(lambda x: x is not '_final', self.root.keys())
+
+    @property
+    def final(self):
+        return '_final' in self.root

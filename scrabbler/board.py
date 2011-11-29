@@ -86,7 +86,7 @@ class Board:
         """Find valid moves on this board.
 
         >>> import board, lexicon
-        >>> t = lexicon.TrieNode()
+        >>> t = lexicon.Lexicon()
         >>> t.add("DOGGED")
         >>> t.add("BOSS")
         >>> t.add("GOB")
@@ -313,7 +313,7 @@ class Board:
         """Return list of letters that can be placed in (row, col) to yield valid down words.
 
         >>> import lexicon, board
-        >>> t = lexicon.TrieNode()
+        >>> t = lexicon.Lexicon()
         >>> t.add('SO')
         >>> t.add('GI')
         >>> b = board.Board()

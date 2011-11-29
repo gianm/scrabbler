@@ -2,11 +2,11 @@
 
 from scrabbler.board import Board
 from scrabbler.move import Move
-from scrabbler import lexicon
+from scrabbler.lexicon import Lexicon
 
 # Load a lexicon
 # Let's use /usr/share/dict/words on this system
-l = lexicon.TrieNode()
+l = Lexicon()
 with open('/usr/share/dict/words') as words:
     for word in words:
         l.add(word.rstrip().upper())
