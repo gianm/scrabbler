@@ -81,7 +81,7 @@ class Referee:
                     "rack": ''.join(player["rack"]),
                     "move": str(move),
                     "score": move.score,
-                    "time": str(int(t_elapsed * 10**6)) })
+                    "time": int(t_elapsed * 10**6) })
 
                 logging.info("{0:25s} {1:25s} {2:10s} {3:4d} {4:8d}".format(
                     player["name"],
