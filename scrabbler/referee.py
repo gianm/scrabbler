@@ -128,6 +128,8 @@ class Referee:
                     break
 
             except InvalidMoveError as e:
+                # XXX -1 is actually a valid score
+                # XXX so this is a bad signifier of invalid moves
                 logging.info("[INVALID MOVE] " + player["name"] + ": " + str(e))
                 player["score"] = -1
                 break
