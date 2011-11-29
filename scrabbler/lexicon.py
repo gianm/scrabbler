@@ -48,7 +48,7 @@ class Lexicon:
             node = node[char]
 
         # We're at the final node -- mark it as such
-        node["_final"] = True
+        node["_F"] = True
 
     def exists(self, word):
         """Check if a word exists in this trie."""
@@ -59,7 +59,7 @@ class Lexicon:
                 return False
             node = node[char]
 
-        return '_final' in node
+        return '_F' in node
 
     def all(self):
         """Sorted list of all words in this trie."""
@@ -69,10 +69,10 @@ class Lexicon:
         # Search edges in alphabetical order
         # So we return a sorted list of words
         def search(node, word=''):
-            if '_final' in node:
+            if '_F' in node:
                 wordlist.append(word)
             for char in sorted(node.keys()):
-                if char is not '_final':
+                if char is not '_F':
                     search(node[char], word + char)
 
         search(self.root)
@@ -93,8 +93,8 @@ class Lexicon:
 
     def next(self):
         """Returns a list of edges leading out of this node."""
-        return filter(lambda x: x is not '_final', self.root.keys())
+        return filter(lambda x: x is not '_F', self.root.keys())
 
     @property
     def final(self):
-        return '_final' in self.root
+        return '_F' in self.root
