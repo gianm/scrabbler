@@ -145,7 +145,7 @@ class Referee:
                 {"name": self.players[0]["name"], "rack": ''.join(self.players[0]["rack"]), "score": self.players[0]["score"]},
                 {"name": self.players[1]["name"], "rack": ''.join(self.players[1]["rack"]), "score": self.players[1]["score"]}, ]}
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=logging.INFO)
 
     t = lexicon.TrieNode()

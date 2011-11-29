@@ -113,7 +113,7 @@ class ExternalPlayerError(Exception):
     pass
 
 # Follow the stdin/stdout protocol
-if __name__ == '__main__':
+def main():
     t = lexicon.TrieNode()
     with open('/usr/share/dict/words') as f:
         for word in f:
