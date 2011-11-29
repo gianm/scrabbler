@@ -19,7 +19,7 @@ b = Board(variant='scrabble')
 # Play a few words
 b.play(Move(row=6, col=7, kind=Move.MOVE_DOWN, word="DoGGED"))
 b.play(Move(row=7, col=6, kind=Move.MOVE_ACROSS, word="BoSS"))
-b.play(Move(row=9, col=7, kind=Move.MOVE_ACROSS, word="GOB"))
+b.play(Move.from_str("GOB 10H"))
 
 # Let's say our player has a rack of UVWXYZ and a blank (?).
 # Print each valid move, sorted by score
