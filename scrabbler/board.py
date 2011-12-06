@@ -115,17 +115,21 @@ class Board:
         moves = self.valid_moves_across(rack, lexicon)
 
         # Flip the board
-        flipped_board = Board()
-        flipped_board.empty = self.empty
+        old_squares = self.squares
+        new_squares = [[None for i in range(self.dim)] for j in range(self.dim)]
         for row, col in [ (row, col) for row in range(self.dim) for col in range(self.dim) ]:
-            flipped_board.squares[col][row] = self.squares[row][col]
+            new_squares[col][row] = self.squares[row][col]
+        self.squares = new_squares
 
         # Add down moves
-        for move in flipped_board.valid_moves_across(rack, lexicon):
-            # Flip this move from across to down
-            move.row, move.col = move.col, move.row
-            move.kind = Move.MOVE_DOWN
-            moves.append(move)
+        try:
+            for move in self.valid_moves_across(rack, lexicon):
+                # Flip this move from across to down
+                move.row, move.col = move.col, move.row
+                move.kind = Move.MOVE_DOWN
+                moves.append(move)
+        finally:
+            self.squares = old_squares
 
         return moves
 
