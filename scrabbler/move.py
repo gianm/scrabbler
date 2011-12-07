@@ -220,7 +220,7 @@ class Move:
 
     @property
     def tiles(self):
-        """List of tiles played by a Move."""
+        """List of tiles used by a Move. Does not include tiles already on the board."""
         return [self.word[i] for i in range(len(self.word)) if self.tmask[i]]
 
     def __str__(self):
