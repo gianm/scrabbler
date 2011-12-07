@@ -54,8 +54,8 @@ for move_info in game["moves"]:
 
 # Print the final scores
 print
-print game["players"][0]["name"] + ": " + str(game["players"][0]["score"])
-print game["players"][1]["name"] + ": " + str(game["players"][1]["score"])
+print game["players"][0]["id"] + ": " + str(game["players"][0]["score"])
+print game["players"][1]["id"] + ": " + str(game["players"][1]["score"])
 
 # Print the final board
 print
