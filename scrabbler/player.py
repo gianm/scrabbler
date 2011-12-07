@@ -25,7 +25,21 @@ class Player:
         if tiles:
             self.rack += tiles
 
+        # Start with valid words
         moves = self.board.valid_moves(self.rack, self.lexicon)
+
+        # Add a pass
+        moves.append(Move(row=None, col=None, kind=Move.MOVE_TRADE, word=''))
+
+        # Add trades
+        if self.can_trade():
+            for x in range(2 ** len(self.rack)):
+                word = ''
+                for i in range(len(self.rack)):
+                    if x & (1<<i):
+                        word += self.rack[i]
+                moves.append(Move(row=None, col=None, kind=Move.MOVE_TRADE, word=word))
+
         move = self.best_move(moves)
 
         # Remove tiles used from our rack
@@ -42,48 +56,28 @@ class Player:
 
 class MaxScorePlayer(Player):
     def best_move(self, moves):
-        if moves:
-            return max(moves, key = lambda x: x.score)
-        elif self.can_trade():
-            # toss these useless tiles
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word=''.join(self.rack))
-        else:
-            # skip our turn
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word='')
-
-class MinScorePlayer(Player):
-    def best_move(self, moves):
-        if moves:
-            return min(moves, key = lambda x: x.score)
-        elif self.can_trade():
-            # toss these useless tiles
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word=''.join(self.rack))
-        else:
-            # skip our turn
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word='')
+        return max(moves, key = lambda x: x.score)
 
 class MaxLengthPlayer(Player):
     def best_move(self, moves):
-        if moves:
-            return max(moves, key = lambda x: len(x.word))
-        elif self.can_trade():
-            # toss these useless tiles
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word=''.join(self.rack))
-        else:
-            # skip our turn
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word='')
+        return max(moves, key = lambda x: len(x.word) if x.kind != Move.MOVE_TRADE else -1)
+
+class MaxTilesPlayer(Player):
+    def best_move(self, moves):
+        return max(moves, key = lambda x: len(x.tiles) if x.kind != Move.MOVE_TRADE else -1)
+
+class RandomPlayer(Player):
+    def best_move(self, moves):
+        return random.choice(moves)
 
 class TrainingPlayer(Player):
     def best_move(self, moves):
-        # randomly either trade letters or play a bad move
-        if not moves or random.choice([0, 1]) == 1:
-            if self.can_trade():
-                exchange = ''.join([letter for letter in random.sample(self.rack, random.randint(1, len(self.rack)))])
-            else:
-                exchange = ''
-
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word=exchange)
+        # Randomly either trade letters or play a bad move
+        if random.choice([0, 1]) == 1:
+            moves = filter(lambda x: x.kind == Move.MOVE_TRADE, moves)
+            return random.choice(moves)
         else:
+            moves = filter(lambda x: x.kind != Move.MOVE_TRADE, moves)
             return min(moves, key = lambda x: x.score)
 
 class ExternalPlayer:
