@@ -29,22 +29,25 @@ class Board:
 
     def play(self, move):
         """Play a move onto the board. Raises InvalidMoveError if the provided
-        move is incompatible with tiles already on the board (although other
-        forms of invalid moves may still be allowed; if you really care about
-        full validity, check against valid_moves).
+        move would clobber tiles already on the board (although other forms of
+        invalid moves may still be allowed; if you really care about full validity,
+        check against valid_moves).
 
         >>> import board
         >>> b = Board()
         >>> b.play(Move.from_str("FOO 8G"))
         >>> b.play(Move.from_str("FOOD 8G"))
+        Traceback (most recent call last):
+        InvalidMoveError: invalid play
+        >>> b.play(Move.from_str("(FOO)D 8G"))
         >>> b.squares[6][9].letter == None
         True
-        >>> b.play(Move.from_str("BAR J7"))
+        >>> b.play(Move.from_str("B(A)R J7"))
         Traceback (most recent call last):
         InvalidMoveError: invalid play
         >>> b.squares[6][9].letter == None
         True
-        >>> b.play(Move.from_str("ODD J7"))
+        >>> b.play(Move.from_str("O(D)D J7"))
         >>> b.squares[6][9].letter
         'O'
         >>> b.play(Move.from_str("*** --"))
@@ -55,12 +58,12 @@ class Board:
             return
 
         # Check if this is a valid move.
-        for letter, square in zip(list(move.word), self.walk_move(move)):
-            if square.letter and square.letter != letter:
+        for letter, played, square in zip(move.word, move.tmask, self.walk_move(move)):
+            if square.letter and (played or square.letter != letter):
                 raise InvalidMoveError("invalid play")
 
         # Move is valid, play it.
-        for letter, square in zip(list(move.word), self.walk_move(move)):
+        for letter, square in zip(move.word, self.walk_move(move)):
             square.letter = letter
 
         # If the board was empty, it isn't anymore.
@@ -102,14 +105,14 @@ class Board:
         >>> sorted([str(move) + " " + str(move.score) for move in b.valid_moves("SSUBWA?", t)])
         ['BoSS 8E 10', 'BoSS 8F 10', 'BoSS 8G 10', 'BoSS 8H 10', 'BoSS H5 10', 'BoSS H6 10', 'BoSS H7 10', 'BoSS H8 10', 'SUBWAy 8C 22', 'SUBWAy 8D 22', 'SUBWAy 8E 20', 'SUBWAy 8F 20', 'SUBWAy 8G 20', 'SUBWAy 8H 22', 'SUBWAy H3 22', 'SUBWAy H4 22', 'SUBWAy H5 20', 'SUBWAy H6 20', 'SUBWAy H7 20', 'SUBWAy H8 22', 'SUBWAyS 8B 78', 'SUBWAyS 8C 74', 'SUBWAyS 8D 74', 'SUBWAyS 8E 72', 'SUBWAyS 8F 74', 'SUBWAyS 8G 72', 'SUBWAyS 8H 74', 'SUBWAyS H2 78', 'SUBWAyS H3 74', 'SUBWAyS H4 74', 'SUBWAyS H5 72', 'SUBWAyS H6 74', 'SUBWAyS H7 72', 'SUBWAyS H8 74']
         >>> b.play(Move(6, 7, Move.MOVE_DOWN,   "DoGGED"))
-        >>> b.play(Move(7, 6, Move.MOVE_ACROSS, "BoSS"))
-        >>> b.play(Move(9, 7, Move.MOVE_ACROSS, "GOB"))
+        >>> b.play(Move(7, 6, Move.MOVE_ACROSS, "BoSS", tmask=[True,False,True,True]))
+        >>> b.play(Move(9, 7, Move.MOVE_ACROSS, "GOB", tmask=[False,True,True]))
         >>> sorted([str(move) + " " + str(move.score) for move in b.valid_moves("UVWXYZ?", t)])
-        ['DoGGEDlY H7 13', 'SUBWaY J8 13', 'ZViEX 11E 55']
+        ['(DoGGED)lY H7 13', '(S)U(B)WaY J8 13', 'ZVi(E)X 11E 55']
         >>> b = board.Board()
         >>> b.play(Move(3, 0, Move.MOVE_DOWN, "SUBWAY"))
         >>> sorted([str(move) + " " + str(move.score) for move in b.valid_moves("SUBWAYZ", t)])
-        ['SUBWAY 10A 39', 'SUBWAY 4A 28', 'SUBWAYS 4A 30', 'SUBWAYS A4 15']
+        ['(S)UBWAY 4A 28', '(S)UBWAYS 4A 30', '(SUBWAY)S A4 15', 'SUBWAY 10A 39']
         """
         # Start with valid across moves
         moves = self.valid_moves_across(rack, lexicon)
@@ -219,13 +222,14 @@ class Board:
                     else:
                         # This column is not occupied
                         if col > anchor and tree.final:
-                            # 'word' represents a valid move. Compute score:
+                            # 'word' represents a valid move.
                             moves.append(Move(
                                 row       = row,
                                 col       = col - len(word),
                                 kind      = Move.MOVE_ACROSS,
                                 word      = word,
-                                score     = score_word(word, col)))
+                                score     = score_word(word, col),
+                                tmask     = [self.squares[row][i].letter is None for i in range(col-len(word), col)]))
 
                         # Try to extend rightwards using a letter from the rack
                         if col < self.dim:
@@ -284,8 +288,8 @@ class Board:
         >>> import board
         >>> b = board.Board()
         >>> b.play(Move(6, 7, Move.MOVE_DOWN,   "DoGGED"))
-        >>> b.play(Move(7, 6, Move.MOVE_ACROSS, "BoSS"))
-        >>> b.play(Move(9, 7, Move.MOVE_ACROSS, "GOB"))
+        >>> b.play(Move(7, 6, Move.MOVE_ACROSS, "BoSS", tmask=[True,False,True,True]))
+        >>> b.play(Move(9, 7, Move.MOVE_ACROSS, "GOB", tmask=[False,True,True]))
         >>> b.updown_fragments(8, 8)
         ('S', 'O')
         >>> b.updown_fragments(8, 9)
@@ -322,7 +326,7 @@ class Board:
         >>> t.add('GI')
         >>> b = board.Board()
         >>> b.play(Move(6,7,Move.MOVE_DOWN,   "DOGGED"))
-        >>> b.play(Move(7,6,Move.MOVE_ACROSS, "BOSS"))
+        >>> b.play(Move(7,6,Move.MOVE_ACROSS, "BOSS", tmask=[True,False,True,True]))
         >>> b.cross_checks( 7, 6, t )
         []
         >>> b.cross_checks( 8, 6, t )
@@ -362,8 +366,8 @@ class Board:
         >>> import board
         >>> b = board.Board()
         >>> b.play(Move(6, 7, Move.MOVE_DOWN,   "DoGGED"))
-        >>> b.play(Move(7, 6, Move.MOVE_ACROSS, "BoSs"))
-        >>> b.play(Move(9, 7, Move.MOVE_ACROSS, "GOB"))
+        >>> b.play(Move(7, 6, Move.MOVE_ACROSS, "BoSs", tmask=[True,False,True,True]))
+        >>> b.play(Move(9, 7, Move.MOVE_ACROSS, "GOB", tmask=[False,True,True,True]))
         >>> b.cross_score(10, 8)
         1
         >>> b.cross_score(5, 7)
@@ -399,7 +403,7 @@ class Board:
         >>> import board
         >>> b = board.Board()
         >>> b.play(Move(6,7,Move.MOVE_DOWN,   "DoGGED"))
-        >>> b.play(Move(7,6,Move.MOVE_ACROSS, "BoSS"))
+        >>> b.play(Move(7,6,Move.MOVE_ACROSS, "BoSS", tmask=[True,False,True,True]))
         >>> b.is_anchor( 0, 0 )
         False
         >>> b.is_anchor( 7, 6 )

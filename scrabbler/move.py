@@ -7,12 +7,13 @@ class Move:
     - (row, col) start position
     - kind: across, down, or trade
     - the word which was played or letters which were traded
+    - (optional) tmask -- 1 where a tile was played, 0 where it was already on the board
     - (optional) score -- for bookkeeping
 
     >>> import move
-    >>> m = Move(word="ADDITiONAL", row=2, col=3, kind=Move.MOVE_DOWN, score=74)
+    >>> m = Move(word="ADDITiONAL", tmask=[False] * 8 + [True] * 2, row=2, col=3, kind=Move.MOVE_DOWN, score=74)
     >>> str(m)
-    'ADDITiONAL D3'
+    '(ADDITiON)AL D3'
     >>> m.word
     'ADDITiONAL'
     >>> m.position
@@ -25,12 +26,16 @@ class Move:
     MOVE_DOWN = 2
     MOVE_TRADE = 3
 
-    def __init__(self, row, col, kind, word, score=0):
+    def __init__(self, row, col, kind, word, tmask=None, score=0):
         self.row = row
         self.col = col
         self.kind = kind
         self.word = word
         self.score = score
+
+        if tmask is None:
+            tmask = [True] * len(word)
+        self.tmask = tmask
 
     @staticmethod
     def from_str(s):
@@ -49,10 +54,12 @@ class Move:
         True
         >>> m.word
         'NITROGEnASE'
+        >>> m.tiles
+        ['N', 'I', 'T', 'R', 'O', 'G', 'E', 'n', 'A', 'S', 'E']
 
-        >>> m = Move.from_str('NITROGEnASE 3H')
+        >>> m = Move.from_str('N(ITRO)GEn(ASE) 3H')
         >>> str(m)
-        'NITROGEnASE 3H'
+        'N(ITRO)GEn(ASE) 3H'
         >>> m.row
         2
         >>> m.col
@@ -61,6 +68,8 @@ class Move:
         True
         >>> m.word
         'NITROGEnASE'
+        >>> m.tiles
+        ['N', 'G', 'E', 'n']
 
         >>> m = Move.from_str('DEW? --')
         >>> str(m)
@@ -73,6 +82,8 @@ class Move:
         True
         >>> m.word
         'DEW?'
+        >>> m.tiles
+        ['D', 'E', 'W', '?']
 
         >>> m = Move.from_str('**** --')
         >>> str(m)
@@ -85,6 +96,8 @@ class Move:
         True
         >>> m.word
         '****'
+        >>> m.tiles
+        ['*', '*', '*', '*']
 
         >>> m = Move.from_str('--')
         >>> str(m)
@@ -97,6 +110,8 @@ class Move:
         True
         >>> m.word
         ''
+        >>> m.tiles
+        []
 
         >>> m = Move.from_str('NITROGEnASE 33')
         Traceback (most recent call last):
@@ -120,13 +135,13 @@ class Move:
         """
 
         kind = None
+        tmask = None
 
         if s == '--':
             word, pos = '', '--'
         else:
             try:
                 word, pos = s.split()
-                word = word.replace('(', '').replace(')', '')
             except ValueError as e:
                 raise InvalidMoveError(str(e))
 
@@ -155,14 +170,28 @@ class Move:
             raise InvalidMoveError("invalid position")
 
         if kind is Move.MOVE_TRADE:
+            # TRADE
             if not re.search(r"^([A-Za-z\?]*|\**)$", word):
                 raise InvalidMoveError("invalid word: " + word);
         else:
-            if not re.search(r"^([A-Za-z]+|\*+)$", word):
+            # ACROSS or DOWN
+            if not re.search(r"^([A-Za-z\(\)]+|\*+)$", word):
                 raise InvalidMoveError("invalid word: " + word);
 
+            # Scan word so we can create tmask
+            tmask = []
+            mode = True
+            for letter in word:
+                if letter == '(':
+                    mode = False
+                elif letter == ')':
+                    mode = True
+                else:
+                    tmask.append(mode)
+            word = word.replace('(', '').replace(')', '')
+
         # Looks OK, so create the object
-        return Move(row, col, kind, word)
+        return Move(row, col, kind, word, tmask)
 
     def mask_word(self):
         """Replace letters in this word with stars (*). Useful for hiding
@@ -189,9 +218,25 @@ class Move:
         else:
             return row_str + col_str
 
+    @property
+    def tiles(self):
+        """List of tiles played by a Move."""
+        return [self.word[i] for i in range(len(self.word)) if self.tmask[i]]
+
     def __str__(self):
         if self.word:
-            return self.word + " " + self.position
+            mode = True
+            display = ''
+            for i in range(len(self.word)):
+                if mode and not self.tmask[i]:
+                    display += '('
+                elif not mode and self.tmask[i]:
+                    display += ')'
+                display += self.word[i]
+                mode = self.tmask[i]
+            if not mode:
+                display += ')'
+            return display + " " + self.position
         else:
             return self.position
 
@@ -200,19 +245,15 @@ class Move:
         >>> Move.from_str('NITROGEnASE 3H') == Move.from_str('NITROGEnASE 3H')
         True
 
+        >>> Move.from_str('NITROGEnASE 3H') == Move.from_str('(NITRO)GEnASE 3H')
+        False
+
         >>> Move.from_str('NITROGEnASE 3H') == Move.from_str('NITROGEnASE H3')
         False
         """
         return str(self) == str(other)
 
     def __ne__(self, other):
-        """
-        >>> Move.from_str('NITROGEnASE 3H') != Move.from_str('NITROGEnASE 3H')
-        False
-
-        >>> Move.from_str('NITROGEnASE 3H') != Move.from_str('NITROGEnASE H3')
-        True
-        """
         return not self == other
 
 class InvalidMoveError(ValueError):
