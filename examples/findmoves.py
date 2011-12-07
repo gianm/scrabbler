@@ -18,14 +18,14 @@ b = Board(variant='scrabble')
 
 # Play a few words
 b.play(Move(row=6, col=7, kind=Move.MOVE_DOWN, word="DoGGED"))
-b.play(Move(row=7, col=6, kind=Move.MOVE_ACROSS, word="BoSS"))
-b.play(Move.from_str("GOB 10H"))
+b.play(Move(row=7, col=6, kind=Move.MOVE_ACROSS, word="BoSS", tmask=[True,False,True,True]))
+b.play(Move.from_str("(G)OB 10H"))
 
 # Let's say our player has a rack of UVWXYZ and a blank (?).
 # Print each valid move, sorted by score
 moves = b.valid_moves(rack=list("UVWXYZ?"), lexicon=l)
 for move in sorted(moves, key = lambda x: x.score):
-    print str(move) + " (" + str(move.score) + ")"
+    print str(move) + " [" + str(move.score) + " pts]"
 
 # Print the board
 print b
