@@ -69,6 +69,12 @@ class Board:
         # If the board was empty, it isn't anymore.
         self.empty = False
 
+    def flip(self):
+        """Flip this board along the diagonal (swaps rows with columns)."""
+        for row in range(self.dim):
+            for col in range(row + 1, self.dim):
+                self.squares[col][row], self.squares[row][col] = self.squares[row][col], self.squares[col][row]
+
     def walk_move(self, move):
         """Return a list of squares that a particular move would pass through.
 
@@ -118,11 +124,7 @@ class Board:
         moves = self.valid_moves_across(rack, lexicon)
 
         # Flip the board
-        old_squares = self.squares
-        new_squares = [[None for i in range(self.dim)] for j in range(self.dim)]
-        for row, col in [ (row, col) for row in range(self.dim) for col in range(self.dim) ]:
-            new_squares[col][row] = self.squares[row][col]
-        self.squares = new_squares
+        self.flip()
 
         # Add down moves
         try:
@@ -132,7 +134,8 @@ class Board:
                 move.kind = Move.MOVE_DOWN
                 moves.append(move)
         finally:
-            self.squares = old_squares
+            # Flip the board back
+            self.flip()
 
         return moves
 
