@@ -5,15 +5,15 @@ import time
 import lexicon
 from board import Board
 from move import Move, InvalidMoveError
-from player import TrainingPlayer, ExternalPlayer
+from player import TrainingPlayer, ExternalPlayer, ExternalPlayerError
 
 class Referee:
     """Manage a game between two Players."""
 
     def __init__(self, player1, player2, lexicon=None, board=None, random_draw=True):
         self.players = [
-            { "obj": player1, "name": "p1", "rack": [], "score": 0, "lastmove": None, "lastdrawn": []},
-            { "obj": player2, "name": "p2", "rack": [], "score": 0, "lastmove": None, "lastdrawn": []}, ]
+            { "obj": player1, "name": "p1", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []},
+            { "obj": player2, "name": "p2", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []}, ]
         self.lexicon = lexicon
         self.board = board if board else Board()
         self.bag = self.board.alltiles
@@ -130,11 +130,9 @@ class Referee:
                     player["score"] += 2 * otherplayer_rack_value
                     break
 
-            except InvalidMoveError as e:
-                # XXX -1 is actually a valid score
-                # XXX so this is a bad signifier of invalid moves
-                logging.info("[INVALID MOVE] " + player["name"] + ": " + str(e))
-                player["score"] = -1
+            except (InvalidMoveError, ExternalPlayerError) as e:
+                player["exception"] = str(e)
+                logging.info("[EXCEPTION] " + player["exception"] + ": " + str(e))
                 break
 
             # swap players
@@ -144,8 +142,14 @@ class Referee:
         logging.info("Final board:\n" + str(self.board))
 
         # Return representation of this game
-        return {
+        game = {
             "moves": self.moves,
             "players": [
                 {"name": self.players[0]["name"], "rack": ''.join(self.players[0]["rack"]), "score": self.players[0]["score"]},
                 {"name": self.players[1]["name"], "rack": ''.join(self.players[1]["rack"]), "score": self.players[1]["score"]}, ]}
+
+        for i in 0, 1:
+            if self.players[i]["exception"]:
+                game["players"][i]["exception"] = self.players[i]["exception"]
+
+        return game
