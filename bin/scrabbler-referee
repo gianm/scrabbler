@@ -12,6 +12,7 @@ import scrabbler.referee
 # Command line arguments
 parser = argparse.ArgumentParser(description='Play two Scrabble players against each other.')
 parser.add_argument('-q', '--quiet', action="store_true", help="don't log progress to stderr")
+parser.add_argument('--gameid', metavar="game-id", default=None, help="unique game identifier (optional)")
 parser.add_argument('--words', metavar="word-list", default='/usr/share/dict/words', help="load word list from this file")
 parser.add_argument('--player1', metavar="program", default=None, help="program to run for player 1")
 parser.add_argument('--player2', metavar="program", default=None, help="program to run for player 2")
@@ -45,4 +46,7 @@ else:
 ref = scrabbler.referee.Referee(player1=p1, player2=p2, lexicon=t)
 
 game = ref.run()
+if args.gameid is not None:
+    game["game"] = { "id": args.gameid }
+
 print json.dumps(game)
