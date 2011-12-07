@@ -1,22 +1,26 @@
 #!/usr/bin/env python
 
-import sys
+import argparse
 import re
+import sys
 
 import scrabbler.player
 import scrabbler.lexicon
 import scrabbler.move
 
+# Command line arguments
+parser = argparse.ArgumentParser(description='STDIN/STDOUT interface to scrabbler.player.Player objects.')
+parser.add_argument('--words', metavar="word-list", default='/usr/share/dict/words', help="load word list from this file")
+parser.add_argument('--player', metavar="class-name", default='MaxScorePlayer', help="Player class to load")
+args = parser.parse_args()
+
 # Follow the stdin/stdout protocol
 t = scrabbler.lexicon.Lexicon()
-with open('/usr/share/dict/words') as f:
+with open(args.words) as f:
     for word in f:
         t.add(word.rstrip().upper())
 
-if sys.argv >= 2:
-    player = getattr(scrabbler.player,sys.argv[1])(t)
-else:
-    player = scrabbler.player.MaxScorePlayer(t)
+player = getattr(scrabbler.player, args.player)(t)
 
 # We're ready
 sys.stdout.write("HELLO\n")

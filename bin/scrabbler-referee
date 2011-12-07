@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import logging
 import json
 import sys
@@ -8,25 +9,35 @@ import scrabbler.lexicon
 import scrabbler.player
 import scrabbler.referee
 
-logging.basicConfig(level=logging.INFO)
+# Command line arguments
+parser = argparse.ArgumentParser(description='Play two Scrabble players against each other.')
+parser.add_argument('-q', '--quiet', action="store_true", help="don't log progress to stderr")
+parser.add_argument('--words', metavar="word-list", default='/usr/share/dict/words', help="load word list from this file")
+parser.add_argument('--player1', metavar="program", default=None, help="program to run for player 1")
+parser.add_argument('--player2', metavar="program", default=None, help="program to run for player 2")
+args = parser.parse_args()
+
+# Enable logging unless --quiet was passed
+if not args.quiet:
+    logging.basicConfig(level=logging.INFO)
 
 logging.info("Loading lexicon")
 
 t = scrabbler.lexicon.Lexicon()
-with open('/usr/share/dict/words') as f:
+with open(args.words) as f:
     for word in f:
         t.add(word.rstrip().upper())
 
-if len(sys.argv) >= 2:
-    logging.info("player1 = ExternalPlayer (" + sys.argv[1] + ")")
-    p1 = scrabbler.player.ExternalPlayer(['/bin/sh', '-c', sys.argv[1]])
+if args.player1:
+    logging.info("player1 = ExternalPlayer (" + args.player1 + ")")
+    p1 = scrabbler.player.ExternalPlayer(['/bin/sh', '-c', args.player1])
 else:
     logging.info("player1 = TrainingPlayer")
     p1 = scrabbler.player.TrainingPlayer(t)
 
-if len(sys.argv) >= 3:
-    logging.info("player2 = ExternalPlayer (" + sys.argv[2] + ")")
-    p2 = scrabbler.player.ExternalPlayer(['/bin/sh', '-c', sys.argv[2]])
+if args.player2:
+    logging.info("player2 = ExternalPlayer (" + args.player2 + ")")
+    p2 = scrabbler.player.ExternalPlayer(['/bin/sh', '-c', args.player2])
 else:
     logging.info("player2 = TrainingPlayer")
     p2 = scrabbler.player.TrainingPlayer(t)
