@@ -12,8 +12,8 @@ class Referee:
 
     def __init__(self, player1, player2, lexicon=None, board=None, random_draw=True):
         self.players = [
-            { "obj": player1, "name": "p1", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []},
-            { "obj": player2, "name": "p2", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []}, ]
+            { "obj": player1, "id": "p1", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []},
+            { "obj": player2, "id": "p2", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []}, ]
         self.lexicon = lexicon
         self.board = board if board else Board()
         self.bag = self.board.alltiles
@@ -53,7 +53,7 @@ class Referee:
                     otherplayer["lastmove"].mask_word()
 
                 logging.debug("> {0:25s} {1:s}:{2:s}".format(
-                    player["name"],
+                    player["id"],
                     ''.join(player["lastdrawn"]),
                     str(otherplayer["lastmove"])))
 
@@ -80,14 +80,14 @@ class Referee:
                 player["score"] += move.score
                 player["lastmove"] = move
                 self.moves.append({
-                    "player": player["name"],
+                    "player": player["id"],
                     "rack": ''.join(player["rack"]),
                     "move": str(move),
                     "score": move.score,
                     "time": int(t_elapsed * 10**6) })
 
                 logging.info("< {0:25s} {1:25s} {2:10s} {3:4d} {4:8d}".format(
-                    player["name"],
+                    player["id"],
                     str(move) + " " + str(move.score),
                     ''.join(player["rack"]),
                     player["score"],
@@ -144,8 +144,8 @@ class Referee:
         game = {
             "moves": self.moves,
             "players": [
-                {"name": self.players[0]["name"], "rack": ''.join(self.players[0]["rack"]), "score": self.players[0]["score"]},
-                {"name": self.players[1]["name"], "rack": ''.join(self.players[1]["rack"]), "score": self.players[1]["score"]}, ]}
+                {"id": self.players[0]["id"], "rack": ''.join(self.players[0]["rack"]), "score": self.players[0]["score"]},
+                {"id": self.players[1]["id"], "rack": ''.join(self.players[1]["rack"]), "score": self.players[1]["score"]}, ]}
 
         for i in 0, 1:
             if self.players[i]["exception"]:
