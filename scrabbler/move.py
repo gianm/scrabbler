@@ -7,8 +7,32 @@ class Move:
     - (row, col) start position
     - kind: across, down, or trade
     - the word which was played or letters which were traded
-    - (optional) tmask -- 1 where a tile was played, 0 where it was already on the board
+    - (optional) tmask -- True where a tile was played, False where it was already on the board
     - (optional) score -- for bookkeeping
+
+    The string form is based on standard Scrabble notation:
+
+    Moves are formatted as "<WORD> <POSITION>". The following rules apply:
+
+    * UPPERCASE letters signify regular tiles
+    * lowercase letters signify blanks
+    * Letters surrounded in (parentheses) represent existing tiles on the board
+    * Letters not surrounded by (parentheses) represent tiles played this turn
+    * Position is "<ROW><COL>" for moves played across, "<COL><ROW>" for moves played down.
+
+    Exchanges are formatted as "<TILES> --".
+
+    * UPPERCASE letters signify regular tiles
+    * Question marks (?) signify blanks
+
+    Passes are formatted as "--".
+
+    Examples:
+
+    * `A(D)DITiON(AL) D3` is the word "additional," played down, starting from square D3, and 'i' is a blank
+    * `CAND(Y) 11H` is the word "candy," played right, starting from square H11
+    * `D?O --` is exchanging D, blank, and O
+    * `--` is skip
 
     >>> import move
     >>> m = Move(word="ADDITiONAL", tmask=[False] * 8 + [True] * 2, row=2, col=3, kind=Move.MOVE_DOWN, score=74)
@@ -20,6 +44,9 @@ class Move:
     'D3'
     >>> m.score
     74
+
+    >>> Move.from_str(str(m)) == m
+    True
     """
 
     MOVE_ACROSS = 1
