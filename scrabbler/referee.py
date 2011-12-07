@@ -93,20 +93,19 @@ class Referee:
                     player["score"],
                     int(t_elapsed * 10**6)))
 
-                # Remove used tiles from rack and draw new tiles
-                if move.kind == Move.MOVE_TRADE:
-                    for letter in move.word:
+                # Remove used tiles from rack
+                for letter in move.tiles:
+                    if letter.isupper():
                         player["rack"].remove(letter)
-                    self.draw(player)
+                    else:
+                        player["rack"].remove('?')
+
+                # Draw new tiles
+                self.draw(player)
+
+                # If exchanging, put exchanged tiles back in the bag
+                if move.kind == Move.MOVE_TRADE:
                     self.bag += list(move.word)
-                else:
-                    for letter, square in zip(list(move.word), self.board.walk_move(move)):
-                        if not square.letter:
-                            if letter.isupper():
-                                player["rack"].remove(letter)
-                            else:
-                                player["rack"].remove('?')
-                    self.draw(player)
 
                 # Play move onto the board
                 self.board.play(move)

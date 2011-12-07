@@ -28,19 +28,15 @@ class Player:
         moves = self.board.valid_moves(self.rack, self.lexicon)
         move = self.best_move(moves)
 
-        if move.kind == Move.MOVE_TRADE:
-            for letter in move.word:
+        # Remove tiles used from our rack
+        for letter in move.tiles:
+            if letter.isupper():
                 self.rack.remove(letter)
-        else:
-            # figure out how many tiles were used by this move
-            # XXX maybe should be in b.play
-            for letter, square in zip(list(move.word), self.board.walk_move(move)):
-                if not square.letter:
-                    if letter.isupper():
-                        self.rack.remove(letter)
-                    else:
-                        self.rack.remove('?')
-            self.board.play(move)
+            else:
+                self.rack.remove('?')
+
+        # Play move onto the board
+        self.board.play(move)
 
         return move
 
