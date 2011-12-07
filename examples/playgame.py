@@ -9,16 +9,17 @@ from scrabbler import player
 # You can define your own AI by subclassing Player
 class MyPlayer(player.Player):
     def best_move(self, moves):
-        # All your valid moves are in 'moves'. You need to pick one.
+        # All your valid moves are in 'moves', including trades (where
+        # move.kind == Move.MOVE_TRADE). You need to pick one move and
+        # return it.
+
         # If you need the Board object, it is in self.board
         # And your rack is in self.rack as a list of letters
 
-        if moves:
-            # Play the longest word
-            return max(moves, key = lambda x: len(x.word))
-        else:
-            # No moves available. Skip our turn (by trading an empty set)
-            return Move(row=None, col=None, kind=Move.MOVE_TRADE, word='')
+        # Let's pick the word that uses the most tiles, and prefer regular
+        # moves over trades:
+
+        return max(moves, key = lambda x: len(x.tiles) if x.kind != Move.MOVE_TRADE else -1)
 
 # Let's play a game!
 
