@@ -134,7 +134,7 @@ class Referee:
 
             except (InvalidMoveError, ExternalPlayerError) as e:
                 player["exception"] = str(e)
-                logging.info("[EXCEPTION] " + player["exception"] + ": " + str(e))
+                logging.info("[EXCEPTION] " + player["id"] + ": " + str(e))
                 break
 
             # swap players
