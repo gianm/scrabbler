@@ -95,10 +95,13 @@ class Referee:
 
                 # Remove used tiles from rack
                 for letter in move.tiles:
-                    if letter.isupper():
-                        player["rack"].remove(letter)
-                    else:
-                        player["rack"].remove('?')
+                    try:
+                        if letter.isupper():
+                            player["rack"].remove(letter)
+                        else:
+                            player["rack"].remove('?')
+                    except ValueError as e:
+                        raise InvalidMoveError("letter " + letter + " not in rack")
 
                 # Draw new tiles
                 self.draw(player)
