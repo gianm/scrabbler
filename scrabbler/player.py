@@ -73,12 +73,13 @@ class RandomPlayer(Player):
 class TrainingPlayer(Player):
     def best_move(self, moves):
         # Randomly either trade letters or play a bad move
-        if random.choice([0, 1]) == 1:
-            moves = filter(lambda x: x.kind == Move.MOVE_TRADE, moves)
-            return random.choice(moves)
+        trades = filter(lambda x: x.kind == Move.MOVE_TRADE, moves)
+        plays = filter(lambda x: x.kind != Move.MOVE_TRADE, moves)
+
+        if plays and random.choice([0, 1]) == 1:
+            return random.choice(plays)
         else:
-            moves = filter(lambda x: x.kind != Move.MOVE_TRADE, moves)
-            return min(moves, key = lambda x: x.score)
+            return random.choice(trades)
 
 class ExternalPlayer:
     """Provides the same interface as Player, but backed by an external
