@@ -14,6 +14,8 @@ parser = argparse.ArgumentParser(description='Play two Scrabble players against 
 parser.add_argument('-q', '--quiet', action="store_true", help="don't log progress to stderr")
 parser.add_argument('--gameid', metavar="game-id", default=None, help="unique game identifier (optional)")
 parser.add_argument('--words', metavar="word-list", default='/usr/share/dict/words', help="load word list from this file")
+parser.add_argument('--player1id', metavar="player-id", default=None, help="unique player identifier (optional)")
+parser.add_argument('--player2id', metavar="player-id", default=None, help="unique player identifier (optional)")
 parser.add_argument('--player1', metavar="program", default=None, help="program to run for player 1")
 parser.add_argument('--player2', metavar="program", default=None, help="program to run for player 2")
 args = parser.parse_args()
@@ -29,6 +31,9 @@ with open(args.words) as f:
     for word in f:
         t.add(word.rstrip().upper())
 
+if args.gameid is not None:
+    logging.info("game = " + args.gameid)
+
 if args.player1:
     logging.info("player1 = ExternalPlayer (" + args.player1 + ")")
     p1 = scrabbler.player.ExternalPlayer(['/bin/sh', '-c', args.player1])
@@ -43,7 +48,7 @@ else:
     logging.info("player2 = TrainingPlayer")
     p2 = scrabbler.player.TrainingPlayer(t)
 
-ref = scrabbler.referee.Referee(player1=p1, player2=p2, lexicon=t)
+ref = scrabbler.referee.Referee(player1=p1, player2=p2, player1id=args.player1id, player2id=args.player2id, lexicon=t)
 
 game = ref.run()
 if args.gameid is not None:

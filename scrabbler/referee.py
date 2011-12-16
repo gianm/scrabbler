@@ -10,10 +10,14 @@ from player import TrainingPlayer, ExternalPlayer, ExternalPlayerError
 class Referee:
     """Manage a game between two Players."""
 
-    def __init__(self, player1, player2, lexicon=None, board=None, random_draw=True):
+    def __init__(self, player1, player2, lexicon=None, board=None, random_draw=True, player1id=None, player2id=None):
+        if player1id is None:
+            player1id = 'p1'
+        if player2id is None:
+            player2id = 'p2'
         self.players = [
-            { "obj": player1, "id": "p1", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []},
-            { "obj": player2, "id": "p2", "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []}, ]
+            { "obj": player1, "id": player1id, "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []},
+            { "obj": player2, "id": player2id, "rack": [], "score": 0, "exception": None, "lastmove": None, "lastdrawn": []}, ]
         self.lexicon = lexicon
         self.board = board if board else Board()
         self.bag = self.board.alltiles
